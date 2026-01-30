@@ -4,7 +4,7 @@
 > *   **Version** : 1.1
 > *   **Statut** : Validé pour développement
 > *   **Cible** : Personnel de salle (Serveurs, Maîtres d'hôtel)
-> *   **Dernière mise à jour** : Intégration DEV-005 (Champ Status)
+> *   **Dernière mise à jour** : Intégration UX-003 (Vue Kanban)
 
 ---
 
@@ -137,6 +137,30 @@ Utilisé pour afficher le champ `status` des réservations (DEV-005).
     *   Animation de transition du badge (fade + scale).
     *   Toast de confirmation optionnel : "Statut mis à jour".
     *   En cas d'erreur API : Rollback du badge + Toast d'erreur.
+
+### 🟠 UX-003 : Vue Kanban (Board)
+Alternative visuelle à la liste pour le pilotage du service.
+
+*   **Structure (Tablet Co-located)** :
+    *   3 colonnes fixes (`grid-cols-3` height 100%).
+    *   Headers clairs avec compteurs : "En Attente (3)", "Arrivé (5)", "Libéré (12)".
+    *   Fond de colonne subtil : `bg-zinc-50/50` (Light) / `bg-zinc-900/50` (Dark).
+
+*   **Composant Card (Kanban Variant)** :
+    *   Plus compacte que la vue liste.
+    *   Contenu : Heure (Gras 18px), Nom (Tuncate), Badge Pax.
+    *   *Pas de boutons* : L'interaction principale est le drag.
+
+*   **Adaptation Mobile (< 768px)** :
+    *   Pas de place pour 3 colonnes.
+    *   **Solution** : Scroll Horizontal avec "Snap Points". Une colonne prend 85% de la largeur.
+    *   Indicateur de scroll (dots) en bas d'écran.
+
+*   **Interactions Drag & Drop** :
+    *   **Lift** : La carte gagne une ombre portée (`shadow-xl`) et scale (1.05) au début du drag.
+    *   **Drop Zone** : La colonne survolée s'illumine (`ring-2 ring-primary/20`).
+    *   **Haptic** : Vibration légère au drop réussi (si supporté).
+    *   **Transition** : Déplacement de la carte instantané (Optimistic).
 
 ---
 

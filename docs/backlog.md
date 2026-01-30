@@ -15,6 +15,10 @@ Un CRM "métier" ultra-simplifié pour l'équipe en salle, agissant comme interf
 | **DEV-003** | Création & Édition Rapide (Create/Update) | Fullstack Developer | 🟢 Fait |
 | **DEV-004** | Gestion Statuts & Annulation (Update/Delete) | Fullstack Developer | 🟢 Fait |
 | **DEV-005** | Intégration Champ Status (en-attente/arrivé/libéré) | Fullstack Developer | 🟢 Fait |
+| **UX-003** | Maquette Vue Kanban (Mobile First) | UX/UI Designer | � Fait |
+| **ARCH-002** | Sélection Librairie Drag & Drop (Touch support) | Software Architect | � Fait |
+| **DEV-006** | Structure Vue Kanban (Colonnes) | Fullstack Developer | 🔴 À faire |
+| **DEV-007** | Implémentation Drag & Drop et Gestion d'État | Fullstack Developer | 🔴 À faire |
 
 ## Backlog Détaillé
 
@@ -90,3 +94,39 @@ Un CRM "métier" ultra-simplifié pour l'équipe en salle, agissant comme interf
 - Les actions rapides permettent de changer le statut : `en-attente` → `arrivé` → `libéré`.
 - La modification du statut se synchronise avec Airtable en < 5 secondes.
 - L'interface reflète immédiatement le changement (Optimistic UI).
+
+### UX-003 : Maquette Vue Kanban (Mobile First)
+**Agent :** UX/UI Designer
+**Description :** Concevoir une vue Kanban pour visualiser les réservations par statut (`en-attente`, `arrivé`, `libéré`). L'interface doit rester ultra-simple et adaptée aux tablettes (zones de drop larges).
+**Critères d'Acceptation :**
+- 3 colonnes clairement identifiées correspondant aux statuts.
+- Cards simplifiées pour la vue Kanban (Nom, Heure, Nb Pax).
+- Indicateurs visuels clairs lors du survol/drag d'une carte.
+- Adaptation mobile (scroll horizontal ou navigation par onglets si manque d'espace).
+
+### ARCH-002 : Sélection Librairie Drag & Drop (Touch support)
+**Agent :** Software Architect
+**Description :** Sélectionner et valider une librairie de Drag & Drop compatible React 19 et parfaitement fonctionnelle sur écran tactile (iPad).
+**Critères d'Acceptation :**
+- Librairie compatible React 19 (ex: `dnd-kit`, `react-beautiful-dnd` ou HTML5 Dnd API avec polyfill).
+- Support tactile natif sans latence perceptible.
+- POC rapide validant le fonctionnement sur mobile/tablette.
+
+### DEV-006 : Structure Vue Kanban (Colonnes)
+**Agent :** Fullstack Developer
+**Description :** Implémenter le squelette de la vue Kanban avec les 3 colonnes basées sur les statuts existants.
+**Critères d'Acceptation :**
+- Nouvelle route ou switch de vue (Liste / Kanban) sur le dashboard.
+- 3 Colonnes : En attente, Arrivé, Libéré.
+- Les réservations existantes s'affichent dans la bonne colonne.
+- Le design respecte les maquettes UX-003.
+
+### DEV-007 : Implémentation Drag & Drop et Gestion d'État
+**Agent :** Fullstack Developer
+**Description :** Rendre le tableau Kanban interactif. Le déplacement d'une carte d'une colonne à une autre doit mettre à jour le statut.
+**Critères d'Acceptation :**
+- Drag & Drop fluide des cartes entre les colonnes.
+- Mise à jour optimiste de l'UI (le changement est immédiat visuellement).
+- Appel API en arrière-plan pour sauvegarder le nouveau statut.
+- Gestion des erreurs (rollback de la carte si l'API échoue).
+

@@ -1,5 +1,9 @@
 # Architecture Technique - CRM La Cigale
 
+> **Dernière Modification** : 30 Janvier 2026 (Intégration Kanban Library)
+> **Statut** : Validé pour développement
+
+
 ## 1. Choix de la Stack & Justification
 
 Pour répondre aux contraintes de **vitesse**, de **sobriété** et de **fiabilité** (offline-first feel), nous privilégions une stack "Lean" basée sur l'écosystème React/Next.js.
@@ -8,6 +12,8 @@ Pour répondre aux contraintes de **vitesse**, de **sobriété** et de **fiabili
 *   **Framework** : **Next.js 15+ (App Router & Turbopack)**.
     *   *Pourquoi ?* Standard actuel. Rendu serveur optimal (RSC) et vitesse de build accrue avec Turbopack.
 *   **Langage** : **TypeScript 5+** (Strict mode). Indispensable.
+*   **Kanban & Drag-and-Drop** : **@dnd-kit/core** (avec `@dnd-kit/sortable`).
+    *   *Pourquoi ?* Modulaire, léger (10kb), accessible et surtout **excellent support tactile** (essentiel pour l'iPad).
 *   **Styling** : **Tailwind CSS v4** + **shadcn/ui**.
     *   *Pourquoi ?* Performance (nouveau moteur Rust de Tailwind v4) et développement rapide.
 *   **Runtime** : **React 19** (Server Actions, Compiler).
@@ -52,9 +58,18 @@ interface Reservation {
 }
 ```
 
-### Stratégie de Cache
-1.  **Cache Client (React Query)** : `staleTime: 30s` pour la lecture. La liste ne se rafraîchit pas à chaque clic, sauf action explicite ou invalidation après mutation.
-2.  **Pas de BDD intermédiaire (Redis/SQL)** : Pour rester "Sobra", on tape directement sur l'API Airtable. Le volume de réservations *par jour* est faible (< 500 records), ce qui tient largement dans les quotas API pour des requêtes filtrées.
+55: ### Stratégie de Cache & State
+56: 1.  **Cache Client (React Query)** : `staleTime: 30s`.
+57: 2.  **Filtrage Date (URL State)** : La date sélectionnée DOIT être dans l'URL (`?date=2023-10-27`).
+        *   Permet le partage d'URL et le rafraîchissement sans perte de contexte.
+        *   Le composant serveur lit `searchParams` pour le pré-fetching éventuel.
+58: 3.  **Kanban State** :
+        *   Utiliser un state local (ou un store simple type `zustand` si complexité croissante) pour la position *visuelle* immédiate des cartes pendant le drag.
+        *   Au `onDragEnd` : 
+            1.  Mise à jour Optimiste du cache React Query (déplacer la carte dans la nouvelle colonne instantanément).
+            2.  Appel Server Action `updateReservationStatus`.
+            3.  Rollback si erreur.
+59: 4.  **Pas de BDD intermédiaire (Redis/SQL)** : Toujours SSOT Airtable.
 
 ---
 
