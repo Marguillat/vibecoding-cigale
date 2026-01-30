@@ -1,7 +1,7 @@
 // @ts-nocheck
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -40,7 +40,7 @@ export function ReservationForm({ open, onOpenChange, onClose, initialData }: Re
 
     const form = useForm<FormData>({
         resolver: zodResolver(formSchema),
-        defaultValues: initialData || {
+        defaultValues: {
             name: '',
             phone: '',
             guests: 2,
@@ -49,6 +49,24 @@ export function ReservationForm({ open, onOpenChange, onClose, initialData }: Re
             status: 'en-attente',
         },
     });
+
+    useEffect(() => {
+        if (initialData) {
+            form.reset({
+                ...initialData,
+                date: initialData.date.slice(0, 16), // Format pour datetime-local
+            });
+        } else {
+            form.reset({
+                name: '',
+                phone: '',
+                guests: 2,
+                date: new Date().toISOString().slice(0, 16),
+                notes: '',
+                status: 'en-attente',
+            });
+        }
+    }, [initialData, form]);
 
     const onSubmit = async (data: FormData) => {
         try {
@@ -68,7 +86,7 @@ export function ReservationForm({ open, onOpenChange, onClose, initialData }: Re
 
     return (
         <Sheet open={open} onOpenChange={onClose}>
-            <SheetContent side="right" className="w-full sm:max-w-md overflow-y-auto">
+            <SheetContent side="right" className="w-full p-6 sm:max-w-md overflow-y-auto">
                 <SheetHeader>
                     <SheetTitle>{isEdit ? 'Modifier' : 'Nouvelle'} réservation</SheetTitle>
                     <SheetDescription>
