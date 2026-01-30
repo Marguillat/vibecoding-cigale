@@ -12,8 +12,17 @@ Pour répondre aux contraintes de **vitesse**, de **sobriété** et de **fiabili
 *   **Framework** : **Next.js 15+ (App Router & Turbopack)**.
     *   *Pourquoi ?* Standard actuel. Rendu serveur optimal (RSC) et vitesse de build accrue avec Turbopack.
 *   **Langage** : **TypeScript 5+** (Strict mode). Indispensable.
-*   **Kanban & Drag-and-Drop** : **@dnd-kit/core** (avec `@dnd-kit/sortable`).
-    *   *Pourquoi ?* Modulaire, léger (10kb), accessible et surtout **excellent support tactile** (essentiel pour l'iPad).
+### 4.4 Drag & Drop (ARCH-002)
+*   **Librairie** : `@dnd-kit/core`
+*   **Justification** : Modulaire, légère, et excellente gestion du tactile (TouchSensor). Contrairement à `react-beautiful-dnd` (déprécié), elle est maintenue et flexible.
+
+### 4.5 Gestion Calendrier & Dates (ARCH-003)
+*   **Librairie** : `react-day-picker` (via `shadcn/ui` Calendar)
+*   **Justification** :
+    *   **Intégration** : Déjà présent dans le projet via shadcn.
+    *   **Performance** : Beaucoup plus léger que `FullCalendar` ou `react-big-calendar`.
+    *   **Internationalisation** : Support natif de `date-fns` et des locales (fr-FR).
+    *   **Customisation** : Permet d'injecter des composants custom dans les cellules (pour les jauges de charge).
 *   **Styling** : **Tailwind CSS v4** + **shadcn/ui**.
     *   *Pourquoi ?* Performance (nouveau moteur Rust de Tailwind v4) et développement rapide.
 *   **Runtime** : **React 19** (Server Actions, Compiler).
@@ -63,13 +72,17 @@ interface Reservation {
 57: 2.  **Filtrage Date (URL State)** : La date sélectionnée DOIT être dans l'URL (`?date=2023-10-27`).
         *   Permet le partage d'URL et le rafraîchissement sans perte de contexte.
         *   Le composant serveur lit `searchParams` pour le pré-fetching éventuel.
-58: 3.  **Kanban State** :
+3.  **Kanban State** :
         *   Utiliser un state local (ou un store simple type `zustand` si complexité croissante) pour la position *visuelle* immédiate des cartes pendant le drag.
         *   Au `onDragEnd` : 
             1.  Mise à jour Optimiste du cache React Query (déplacer la carte dans la nouvelle colonne instantanément).
             2.  Appel Server Action `updateReservationStatus`.
             3.  Rollback si erreur.
-59: 4.  **Pas de BDD intermédiaire (Redis/SQL)** : Toujours SSOT Airtable.
+5.  **Calendrier & Navigation Temporelle** :
+    *   Navigation Mois : URL State (`?month=2023-11`).
+    *   **Data Fetching Spécifique** : Pour la vue mensuelle, ne PAS charger toutes les réservations.
+        *   Créer une Server Action dédiée `getMonthlyOccupancy(month)` qui retourne uniquement un tableau léger : `[{ date: '2023-11-01', status: 'full' | 'high' | 'low' }]`.
+6.  **Pas de BDD intermédiaire (Redis/SQL)** : Toujours SSOT Airtable.
 
 ---
 

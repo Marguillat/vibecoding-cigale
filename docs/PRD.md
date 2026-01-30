@@ -1,5 +1,8 @@
 # PRD - CRM Réservations "La Cigale"
 
+> **Dernière Modification** : 30 Janvier 2026
+
+
 ## 1. Introduction & Vision
 Le restaurant "La Cigale" utilise actuellement Airtable pour gérer ses réservations. Bien que puissant, Airtable est jugé trop complexe et peu ergonomique pour une utilisation rapide en plein service (tablette, stress, rapidité requise). 
 
@@ -14,6 +17,8 @@ L'objectif est de créer un CRM "métier" ultra-simplifié qui agit comme une in
 
 ### In
 *   Affichage de la liste des réservations du jour.
+*   **[NOUVEAU] Vue Calendrier (Mensuelle/Hebdomadaire) pour pilotage des disponibilités.**
+*   **[NOUVEAU] Vue Kanban (Suivi des statuts en temps réel).**
 *   Création d'une nouvelle réservation (Nom, Tel, Nb personnes, Heure, Table).
 *   Modification simple (Changement d'heure, attribution de table, changement de statut).
 *   Annulation/Suppression.
@@ -24,8 +29,12 @@ L'objectif est de créer un CRM "métier" ultra-simplifié qui agit comme une in
 *   Gestion des plannings employés.
 *   Analytiques complexes et CRM Marketing (emails, fidélité). *Ces tâches restent dans Airtable.*
 
-## 4. Fonctionnalités Clés (CRUD)
-*   **Lecture (Read)** : Vue liste simplifiée, filtrée par date (aujourd'hui par défaut). Indicateurs visuels clairs du statut (Confirmé, Arrivé, Annulé).
+## 4. Fonctionnalités Clés (CRUD & Vues)
+*   **Lecture (Read)** : vue liste filtrée par date, vue Kanban par statut.
+*   **Vue Calendrier (Planification)** : 
+    *   **Vision Macro** : Calendrier mensuel affichant le taux d'occupation (ex: points de couleur ou jauge).
+    *   **Navigation** : Changement rapide de jour par clic sur une date.
+    *   **Interaction** : Drag & Drop d'une réservation pour changer sa date (avec confirmation).
 *   **Création (Create)** : Formulaire "express" accessible en un clic.
 *   **Mise à jour (Update)** : Modification rapide du statut (ex: cliquer sur un bouton pour marquer comme "Arrivé") ou de la table.
 *   **Suppression (Delete)** : Possibilité d'annuler une réservation avec confirmation.

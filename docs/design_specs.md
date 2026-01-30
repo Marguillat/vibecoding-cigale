@@ -4,7 +4,7 @@
 > *   **Version** : 1.1
 > *   **Statut** : Validé pour développement
 > *   **Cible** : Personnel de salle (Serveurs, Maîtres d'hôtel)
-> *   **Dernière mise à jour** : Intégration UX-003 (Vue Kanban)
+> *   **Dernière mise à jour** : 30 Janvier 2026 (Ajout Vue Calendrier UX-005)
 
 ---
 
@@ -112,11 +112,14 @@ Utilisé pour afficher le champ `status` des réservations (DEV-005).
     5.  `Textarea` (Notes) - Optionnel.
 *   **Action** : Bouton "Enregistrer" (`w-full`) en bas de sheet (sticky bottom).
 
-### 🔴 DEV-004 : Actions Rapides (Update Status)
-*   **Swipe Actions** (Idéalement sur mobile) ou Boutons dans la `Card`.
-*   **Action "Arrivé"** : Bouton visible directement sur la carte (ex: Icone "Check").
-    *   *Feedback* : La carte devient verte ou change de section instantanément (Optimistic UI).
-*   **Action "Annuler"** : Accessible via un menu "..." (`DropdownMenu`) sur la carte -> `AlertDialog` de confirmation.
+### 🔴 DEV-004 : Actions Rapides (Update Status / Modif)
+*   **Vue Liste - Boutons Directs** (Demande terrain : limiter les clics).
+    *   **Edit** : Bouton Icône `Pencil` (Ghost variant). Ouvre la Sheet.
+    *   **Cancel** : Bouton Icône `Trash2` (Ghost variant, text-destructive). Ouvre AlertDialog.
+    *   **Action Principale** : Bouton/Badge "Arrivé" (accès direct).
+*   **Vue Kanban - Actions** :
+    *   Menu "..." (`DropdownMenu`) conservé pour la vue Kanban (manque d'espace sur les cartes).
+    *   Drag & Drop prioritaire pour le statut.
 
 ### 🟣 DEV-005 : Intégration Champ Status (Cycle de Vie)
 *   **Composant Principal** : `Badge` avec icône intégrée pour afficher le statut actuel.
@@ -161,6 +164,39 @@ Alternative visuelle à la liste pour le pilotage du service.
     *   **Drop Zone** : La colonne survolée s'illumine (`ring-2 ring-primary/20`).
     *   **Haptic** : Vibration légère au drop réussi (si supporté).
     *   **Transition** : Déplacement de la carte instantané (Optimistic).
+
+### 🟡 UX-004 : Indicateur "Notes" (Warning)
+Alerte visuelle critique pour les réservations contenant des demandes spéciales ou allergies.
+
+*   **Composant Visuel** :
+    *   Icône : `AlertCircle` (famille Lucide).
+    *   Couleur : `text-amber-500` (Light & Dark).
+    *   Taille : Relative au texte (16px).
+
+*   **Emplacement** :
+    *   **Vue Liste** : À droite du nom du client.
+    *   **Vue Kanban** : Coin supérieur droit de la carte (Badge).
+
+*   **Comportement** :
+    *   S'affiche **uniquement** si le champ `notes` n'est pas vide.
+    *   Doit être visible au premier coup d'œil (scan rapide avant service).
+
+### 🔵 UX-005 : Vue Calendrier (Planning)
+
+*   **Cellule Jour (Composant)** :
+    *   Affichage du numéro (ex: "12").
+    *   **Indicateur de Charge** : Point simple (`w-2 h-2`) sous le numéro.
+        *   🟢 Vert (`text-emerald-500`) : Charge faible (<50%).
+        *   🟠 Orange (`text-amber-500`) : Charge moyenne (50-80%).
+        *   🔴 Rouge (`text-red-500`) : Complet / Haute charge (>80%).
+    *   **État Actif** : Cercle plein (`bg-primary text-primary-foreground`) si sélectionné.
+    *   **Aujourd'hui** : Bordure accentuée (`border-primary`).
+
+*   **Interactions** :
+    *   **Clic Date** :
+        1.  Filtre la liste globale sur cette date.
+        2.  Bascule automatiquement vers la vue précédemment active (Liste ou Kanban).
+    *   **Swipe (Mobile)** : Navigation Mois suivant/précédent.
 
 ---
 

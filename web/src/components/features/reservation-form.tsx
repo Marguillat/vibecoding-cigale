@@ -28,18 +28,19 @@ type FormData = z.infer<typeof formSchema>;
 
 interface ReservationFormProps {
     open: boolean;
+    onOpenChange: (open: boolean) => void;
     onClose: () => void;
-    reservation?: Reservation;
+    initialData?: Reservation;
 }
 
-export function ReservationForm({ open, onClose, reservation }: ReservationFormProps) {
+export function ReservationForm({ open, onOpenChange, onClose, initialData }: ReservationFormProps) {
     const createMutation = useCreateReservation();
     const updateMutation = useUpdateReservation();
-    const isEdit = !!reservation;
+    const isEdit = !!initialData;
 
     const form = useForm<FormData>({
         resolver: zodResolver(formSchema),
-        defaultValues: reservation || {
+        defaultValues: initialData || {
             name: '',
             phone: '',
             guests: 2,
@@ -52,7 +53,7 @@ export function ReservationForm({ open, onClose, reservation }: ReservationFormP
     const onSubmit = async (data: FormData) => {
         try {
             if (isEdit) {
-                await updateMutation.mutateAsync({ id: reservation.id, data });
+                await updateMutation.mutateAsync({ id: initialData.id, data });
                 toast.success('Réservation modifiée');
             } else {
                 await createMutation.mutateAsync(data as Omit<Reservation, 'id'>);
