@@ -64,3 +64,23 @@ export async function updateReservation(id: string, data: Partial<Reservation>):
 export async function deleteReservation(id: string): Promise<void> {
     await table.destroy(id);
 }
+
+export async function getWeekReservations(weekStart: Date): Promise<Reservation[]> {
+    // weekStart = lundi, weekEnd = dimanche suivant (inclusif = lundi de la semaine d'après)
+    const weekEnd = new Date(weekStart);
+    weekEnd.setDate(weekEnd.getDate() + 7);
+
+    const weekStartStr = weekStart.toISOString();
+    const weekEndStr = weekEnd.toISOString();
+
+    const formula = `AND(IS_AFTER({date}, '${weekStartStr}'), IS_BEFORE({date}, '${weekEndStr}'))`;
+
+    const records = await table
+        .select({
+            filterByFormula: formula,
+            sort: [{ field: 'date', direction: 'asc' }],
+        })
+        .all();
+
+    return records.map((r) => mapAirtableToReservation(r as unknown as AirtableRecord));
+}

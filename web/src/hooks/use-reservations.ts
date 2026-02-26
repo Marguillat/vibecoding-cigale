@@ -1,7 +1,7 @@
 'use client';
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { fetchReservations, addReservation, modifyReservation, removeReservation } from '@/app/actions/reservations';
+import { fetchReservations, addReservation, modifyReservation, removeReservation, fetchWeekReservations } from '@/app/actions/reservations';
 import { Reservation } from '@/lib/types';
 
 export function useReservations(date?: string) {
@@ -85,5 +85,14 @@ export function useDeleteReservation() {
         onSettled: () => {
             queryClient.invalidateQueries({ queryKey: ['reservations'] });
         },
+    });
+}
+
+export function useWeekReservations(weekStart: Date) {
+    const weekStartStr = weekStart.toISOString().split('T')[0]; // YYYY-MM-DD for stable cache key
+    return useQuery({
+        queryKey: ['reservations', 'week', weekStartStr],
+        queryFn: () => fetchWeekReservations(weekStart.toISOString()),
+        staleTime: 1000 * 60, // 1 min
     });
 }

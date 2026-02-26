@@ -31,9 +31,10 @@ interface ReservationFormProps {
     onOpenChange: (open: boolean) => void;
     onClose: () => void;
     initialData?: Reservation;
+    prefillDate?: string; // datetime-local string (YYYY-MM-DDTHH:mm) pour pré-remplissage depuis timeline
 }
 
-export function ReservationForm({ open, onOpenChange, onClose, initialData }: ReservationFormProps) {
+export function ReservationForm({ open, onOpenChange, onClose, initialData, prefillDate }: ReservationFormProps) {
     const createMutation = useCreateReservation();
     const updateMutation = useUpdateReservation();
     const isEdit = !!initialData;
@@ -54,19 +55,19 @@ export function ReservationForm({ open, onOpenChange, onClose, initialData }: Re
         if (initialData) {
             form.reset({
                 ...initialData,
-                date: initialData.date.slice(0, 16), // Format pour datetime-local
+                date: initialData.date.slice(0, 16),
             });
         } else {
             form.reset({
                 name: '',
                 phone: '',
                 guests: 2,
-                date: new Date().toISOString().slice(0, 16),
+                date: prefillDate ?? new Date().toISOString().slice(0, 16),
                 notes: '',
                 status: 'en-attente',
             });
         }
-    }, [initialData, form]);
+    }, [initialData, prefillDate, form]);
 
     const onSubmit = async (data: FormData) => {
         try {

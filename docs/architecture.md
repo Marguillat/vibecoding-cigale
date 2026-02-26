@@ -1,6 +1,6 @@
 # Architecture Technique - CRM La Cigale
 
-> **Dernière Modification** : 30 Janvier 2026 (Intégration Kanban Library)
+> **Dernière Modification** : 26 Février 2026 (Intégration Vue Semaine / Timeline)
 > **Statut** : Validé pour développement
 
 
@@ -12,17 +12,12 @@ Pour répondre aux contraintes de **vitesse**, de **sobriété** et de **fiabili
 *   **Framework** : **Next.js 15+ (App Router & Turbopack)**.
     *   *Pourquoi ?* Standard actuel. Rendu serveur optimal (RSC) et vitesse de build accrue avec Turbopack.
 *   **Langage** : **TypeScript 5+** (Strict mode). Indispensable.
-### 4.4 Drag & Drop (ARCH-002)
-*   **Librairie** : `@dnd-kit/core`
-*   **Justification** : Modulaire, légère, et excellente gestion du tactile (TouchSensor). Contrairement à `react-beautiful-dnd` (déprécié), elle est maintenue et flexible.
-
-### 4.5 Gestion Calendrier & Dates (ARCH-003)
-*   **Librairie** : `react-day-picker` (via `shadcn/ui` Calendar)
-*   **Justification** :
-    *   **Intégration** : Déjà présent dans le projet via shadcn.
-    *   **Performance** : Beaucoup plus léger que `FullCalendar` ou `react-big-calendar`.
-    *   **Internationalisation** : Support natif de `date-fns` et des locales (fr-FR).
-    *   **Customisation** : Permet d'injecter des composants custom dans les cellules (pour les jauges de charge).
+*   **Kanban & Drag-and-Drop** : **@dnd-kit/core** (avec `@dnd-kit/sortable`).
+    *   *Pourquoi ?* Modulaire, léger (10kb), accessible et **excellent support tactile** (TouchSensor). Réutilisé pour le Kanban ET la vue Timeline (drag temporel).
+*   **Calendrier Mensuel** : **react-day-picker** (via `shadcn/ui` Calendar).
+    *   *Pourquoi ?* Headless, léger, gestion native des locales (`date-fns/locale`).
+*   **Timeline Semaine** : **CSS Grid custom** (pas de librairie externe).
+    *   *Pourquoi ?* La grille est simple (11 créneaux × 7 jours, pas de multi-day events). `dnd-kit` gère déjà le repositionnement. Évite une dépendance lourde (`FullCalendar`, `react-big-calendar`) pour un cas d'usage ciblé.
 *   **Styling** : **Tailwind CSS v4** + **shadcn/ui**.
     *   *Pourquoi ?* Performance (nouveau moteur Rust de Tailwind v4) et développement rapide.
 *   **Runtime** : **React 19** (Server Actions, Compiler).
@@ -79,10 +74,20 @@ interface Reservation {
             2.  Appel Server Action `updateReservationStatus`.
             3.  Rollback si erreur.
 5.  **Calendrier & Navigation Temporelle** :
-    *   Navigation Mois : URL State (`?month=2023-11`).
-    *   **Data Fetching Spécifique** : Pour la vue mensuelle, ne PAS charger toutes les réservations.
-        *   Créer une Server Action dédiée `getMonthlyOccupancy(month)` qui retourne uniquement un tableau léger : `[{ date: '2023-11-01', status: 'full' | 'high' | 'low' }]`.
-6.  **Pas de BDD intermédiaire (Redis/SQL)** : Toujours SSOT Airtable.
+    *   Navigation Mois : URL State (`?month=2026-02`).
+    *   Navigation Semaine : URL State (`?week=2026-02-24`, lundi de la semaine).
+    *   Navigation Jour (Mobile) : URL State (`?day=2026-02-25`).
+    *   **Data Fetching Mensuel** : Server Action `getMonthlyOccupancy(month)` → données légères (count/status par jour).
+    *   **Data Fetching Hebdomadaire** : Server Action `fetchWeekReservations(weekStart)` → toutes les réservations de la semaine.
+        *   Formule Airtable : `AND(IS_AFTER({date}, 'weekStart'), IS_BEFORE({date}, 'weekEnd'))`.
+        *   Cache React Query avec clé `['reservations', 'week', weekStart]`.
+    *   Le sub-mode **Mois | Semaine** est persisté en `localStorage`.
+6.  **Drag & Drop Temporel (Timeline)** :
+    *   Chaque cellule (jour × créneau horaire) est une **zone droppable** `dnd-kit`.
+    *   Chaque Reservation Block est un **draggable**.
+    *   Au `onDragEnd` : calcul de la nouvelle date+heure depuis les coordonnées de la cellule cible → `AlertDialog` de confirmation → `modifyReservation(id, { date: newDateTime })`.
+    *   Gestion du rollback en cas d'erreur API.
+7.  **Pas de BDD intermédiaire (Redis/SQL)** : Toujours SSOT Airtable.
 
 ---
 
@@ -90,8 +95,9 @@ interface Reservation {
 
 ### Communication
 *   **Adapter Pattern** : Créer un service `lib/airtable.ts` qui isole toute la logique Airtable.
-*   **Filtrage Serveur** : Les requêtes `GET` doivent TOUJOURS utiliser `filterByFormula` pour ne récupérer que les réservations du jour (ou de la date sélectionnée). On ne charge jamais toute la base.
-    *   *Formule* : `IS_SAME({Date}, TODA(), 'day')`
+*   **Filtrage Serveur** : Les requêtes `GET` doivent TOUJOURS utiliser `filterByFormula`. On ne charge jamais toute la base.
+    *   *Formule jour* : `IS_SAME({date}, 'YYYY-MM-DD', 'day')`
+    *   *Formule semaine* : `AND(IS_AFTER({date}, 'weekStart'), IS_BEFORE({date}, 'weekEnd'))`
 *   **Tri** : `sort: [{field: "Date", direction: "asc"}]` côté Airtable pour recevoir les données déjà ordonnées.
 
 ### Performance & Rate Limits
@@ -124,18 +130,29 @@ Le personnel doit accéder très vite à l'outil. Pas d'emails/mots de passe com
 ```
 /src
   /app
-    /api           # Proxy endpoints
-    /login         # Page auth
-    /(dashboard)   # Routes protégées
-      page.tsx     # Vue Liste
+    /api                # Proxy endpoints
+    /login              # Page auth
+    /actions             # Server Actions
+      reservations.ts    # fetchReservations, fetchWeekReservations, add, modify, remove
+    /(dashboard)         # Routes protégées
+      page.tsx           # Vue principale (Tabs : Liste / Kanban / Planning)
   /components
-    /ui            # shadcn components
-    /features      # Business components (ReservationCard)
+    /ui                  # shadcn components
+    /features            # Business components
+      reservation-card.tsx
+      reservation-form.tsx
+      kanban-board.tsx   # Vue Kanban (dnd-kit)
+      kanban-card.tsx
+      kanban-column.tsx
+      calendar-view.tsx  # Vue Calendrier Mensuel
+      week-timeline.tsx  # [NEW] Grille CSS Grid (7j × 11h)
+      timeline-block.tsx # [NEW] Bloc réservation positionné
   /lib
-    airtable.ts    # Service Airtable
+    airtable.ts          # Service Airtable (getReservations, getWeekReservations)
     utils.ts
     types.ts
-  /hooks           # Custom hooks (useReservations)
+  /hooks
+    use-reservations.ts  # Hook React Query
 ```
 
 ### Checklist Démarrage

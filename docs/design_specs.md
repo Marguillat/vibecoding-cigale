@@ -4,7 +4,7 @@
 > *   **Version** : 1.1
 > *   **Statut** : Validé pour développement
 > *   **Cible** : Personnel de salle (Serveurs, Maîtres d'hôtel)
-> *   **Dernière mise à jour** : 30 Janvier 2026 (Ajout Vue Calendrier UX-005)
+> *   **Dernière mise à jour** : 26 Février 2026 (Ajout Vue Semaine / Timeline)
 
 ---
 
@@ -197,6 +197,41 @@ Alerte visuelle critique pour les réservations contenant des demandes spéciale
         1.  Filtre la liste globale sur cette date.
         2.  Bascule automatiquement vers la vue précédemment active (Liste ou Kanban).
     *   **Swipe (Mobile)** : Navigation Mois suivant/précédent.
+
+#### Vue Semaine (Timeline Hebdomadaire)
+Vue chronologique type "Google Calendar" pour dispatcher visuellement les réservations.
+
+*   **Structure (Tablet/Desktop)** :
+    *   **Layout** : `grid` avec 8 colonnes (1 axe horaire + 7 jours).
+    *   **Axe Y** : Créneaux horaires (11h-22h, configurable). Lignes horizontales légères (`border-zinc-100` / `dark:border-zinc-800`).
+    *   **Axe X** : 7 colonnes jour avec label ("lun. 23/02") et la date.
+    *   **Header** : "Semaine du X au Y" + Flèches Nav (< >) + Bouton "Aujourd'hui".
+    *   **Jour courant** : Colonne avec fond légèrement accentué (`bg-primary/5`).
+
+*   **Composant "Reservation Block"** (Time Card) :
+    *   Positionée verticalement à l'heure exacte dans la colonne du jour.
+    *   **Hauteur** : Proportionnelle à la durée (min 60px pour lisibilité).
+    *   **Contenu** : Heure (Gras), Nom (Truncate), Pax (Badge), Téléphone.
+    *   **Bordure gauche colorée** selon le statut :
+        *   `border-l-4 border-amber-500` : En attente.
+        *   `border-l-4 border-emerald-500` : Arrivé.
+        *   `border-l-4 border-zinc-400` : Libéré.
+    *   **Fond** : `bg-white dark:bg-zinc-900` avec `shadow-sm`.
+    *   **Clic** : Ouvre le `Sheet` d'édition.
+
+*   **Interactions** :
+    *   **Clic créneau vide** : Ouvre le formulaire de création pré-rempli (date + heure du créneau cliqué).
+    *   **Drag & Drop** : Déplacement vertical (changement d'heure) ou horizontal (changement de jour).
+    *   **Confirmation** : `AlertDialog` "Déplacer la réservation de X au [date] à [heure] ?".
+
+*   **Adaptation Mobile (< 768px)** :
+    *   Afficher **1 seul jour** à la fois (axe Y horaire visible).
+    *   **Swipe horizontal** : Navigation entre les jours.
+    *   Header : Nom du jour + date ("mer. 25/02").
+
+*   **Navigation Planning** :
+    *   Sous-tabs ou `ToggleGroup` dans la vue Planning : **Mois** | **Semaine**.
+    *   Le mode sélectionné est persisté (localStorage).
 
 ---
 
