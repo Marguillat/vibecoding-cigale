@@ -30,15 +30,19 @@ export function TimelineBlock({ reservation, onClick }: TimelineBlockProps) {
             )}
             onClick={() => onClick(reservation)}
         >
-            <div className="flex items-start justify-between gap-1">
-                <div className="min-w-0 flex-1">
+            <div className="flex items-center justify-between gap-1 h-full">
+                <div className="min-w-0 flex-1 flex flex-col justify-center">
                     <span className="font-bold text-sm leading-tight block">{timeLabel}</span>
-                    <span className="text-sm truncate block text-foreground/90">{reservation.name}</span>
-                    <span className="text-xs text-muted-foreground">{reservation.guests} pers.</span>
+                    <span className="text-sm truncate block text-foreground/90 capitalize">{reservation.name}</span>
                 </div>
-                {reservation.notes && (
-                    <MessageSquareText className="h-4 w-4 text-amber-500 mt-0.5 shrink-0" />
-                )}
+                <div className="flex flex-col items-end justify-center gap-1 shrink-0 ml-1">
+                    <span className="text-xs font-medium bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded-sm text-zinc-600 dark:text-zinc-400 whitespace-nowrap">
+                        {reservation.guests} {reservation.guests > 1 ? 'personnes' : 'personne'}
+                    </span>
+                    {reservation.notes && (
+                        <MessageSquareText className="h-3.5 w-3.5 text-amber-500" />
+                    )}
+                </div>
             </div>
         </button>
     );
